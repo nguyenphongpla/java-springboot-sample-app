@@ -8,7 +8,6 @@ import static org.mockito.Mockito.when;
 
 import com.netflix.graphql.dgs.DgsDataFetchingEnvironment;
 import graphql.execution.DataFetcherResult;
-import graphql.relay.PageInfo;
 import graphql.schema.DataFetchingEnvironment;
 import io.spring.api.exception.ResourceNotFoundException;
 import io.spring.application.ArticleQueryService;
@@ -21,6 +20,7 @@ import io.spring.core.user.User;
 import io.spring.core.user.UserRepository;
 import io.spring.graphql.types.Article;
 import io.spring.graphql.types.ArticlesConnection;
+import io.spring.graphql.types.PageInfo;
 import io.spring.graphql.types.Profile;
 import java.util.Collections;
 import java.util.List;
@@ -43,6 +43,7 @@ public class ArticleDatafetcherTest {
   @Mock private ArticleQueryService articleQueryService;
   @Mock private UserRepository userRepository;
   @Mock private DataFetchingEnvironment dataFetchingEnvironment;
+  @Mock private org.springframework.context.ApplicationContext applicationContext;
 
   @BeforeEach
   public void setUp() {
@@ -104,7 +105,7 @@ public class ArticleDatafetcherTest {
     assertEquals(1, result.getData().getEdges().size());
     assertEquals("a-slug", result.getData().getEdges().get(0).getNode().getSlug());
     PageInfo pageInfo = result.getData().getPageInfo();
-    assertEquals(false, pageInfo.isHasNextPage());
+    assertEquals(false, pageInfo.getHasNextPage());
   }
 
   @Test
@@ -117,7 +118,8 @@ public class ArticleDatafetcherTest {
     CursorPager<ArticleData> pager = new CursorPager<>(List.of(articleData), Direction.NEXT, false);
     when(articleQueryService.findUserFeedWithCursor(eq(target), any())).thenReturn(pager);
 
-    DgsDataFetchingEnvironment dfe = new DgsDataFetchingEnvironment(dataFetchingEnvironment);
+    DgsDataFetchingEnvironment dfe =
+        new DgsDataFetchingEnvironment(dataFetchingEnvironment, applicationContext);
     DataFetcherResult<ArticlesConnection> result =
         newDatafetcher().userFeed(5, null, null, null, dfe);
 
@@ -131,7 +133,8 @@ public class ArticleDatafetcherTest {
     when(dataFetchingEnvironment.<Profile>getSource()).thenReturn(profile);
     when(userRepository.findByUsername("missing")).thenReturn(Optional.empty());
 
-    DgsDataFetchingEnvironment dfe = new DgsDataFetchingEnvironment(dataFetchingEnvironment);
+    DgsDataFetchingEnvironment dfe =
+        new DgsDataFetchingEnvironment(dataFetchingEnvironment, applicationContext);
     assertThrows(
         ResourceNotFoundException.class, () -> newDatafetcher().userFeed(5, null, null, null, dfe));
   }
@@ -146,7 +149,8 @@ public class ArticleDatafetcherTest {
             eq(null), eq(null), eq("target"), any(), eq(null)))
         .thenReturn(pager);
 
-    DgsDataFetchingEnvironment dfe = new DgsDataFetchingEnvironment(dataFetchingEnvironment);
+    DgsDataFetchingEnvironment dfe =
+        new DgsDataFetchingEnvironment(dataFetchingEnvironment, applicationContext);
     DataFetcherResult<ArticlesConnection> result =
         newDatafetcher().userFavorites(5, null, null, null, dfe);
 
@@ -164,7 +168,8 @@ public class ArticleDatafetcherTest {
             eq(null), eq("target"), eq(null), any(), eq(null)))
         .thenReturn(pager);
 
-    DgsDataFetchingEnvironment dfe = new DgsDataFetchingEnvironment(dataFetchingEnvironment);
+    DgsDataFetchingEnvironment dfe =
+        new DgsDataFetchingEnvironment(dataFetchingEnvironment, applicationContext);
     DataFetcherResult<ArticlesConnection> result =
         newDatafetcher().userArticles(5, null, null, null, dfe);
 

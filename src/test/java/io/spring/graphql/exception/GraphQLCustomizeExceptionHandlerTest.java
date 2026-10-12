@@ -15,15 +15,15 @@ import graphql.execution.ResultPath;
 import graphql.schema.DataFetchingEnvironment;
 import io.spring.api.exception.InvalidAuthenticationException;
 import io.spring.graphql.types.Error;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Path;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.metadata.ConstraintDescriptor;
 import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
-import javax.validation.Path;
-import javax.validation.constraints.NotBlank;
-import javax.validation.metadata.ConstraintDescriptor;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -54,7 +54,7 @@ public class GraphQLCustomizeExceptionHandlerTest {
     GraphQLCustomizeExceptionHandler handler = new GraphQLCustomizeExceptionHandler();
 
     DataFetcherExceptionHandlerResult result =
-        handler.onException(paramsFor(new InvalidAuthenticationException()));
+        handler.handleException(paramsFor(new InvalidAuthenticationException())).get();
 
     List<GraphQLError> errors = result.getErrors();
     assertEquals(1, errors.size());
@@ -71,7 +71,7 @@ public class GraphQLCustomizeExceptionHandlerTest {
         new ConstraintViolationException(Collections.singleton(violation));
 
     GraphQLCustomizeExceptionHandler handler = new GraphQLCustomizeExceptionHandler();
-    DataFetcherExceptionHandlerResult result = handler.onException(paramsFor(exception));
+    DataFetcherExceptionHandlerResult result = handler.handleException(paramsFor(exception)).get();
 
     List<GraphQLError> errors = result.getErrors();
     assertEquals(1, errors.size());
@@ -92,7 +92,8 @@ public class GraphQLCustomizeExceptionHandlerTest {
     assertEquals("BAD_REQUEST", error.getMessage());
     assertEquals(1, error.getErrors().size());
     assertEquals("email", error.getErrors().get(0).getKey());
-    assertEquals(Collections.singletonList("must not be blank"), error.getErrors().get(0).getValue());
+    assertEquals(
+        Collections.singletonList("must not be blank"), error.getErrors().get(0).getValue());
   }
 
   @SuppressWarnings({"unchecked", "rawtypes"})

@@ -2,8 +2,8 @@ package io.spring.application.article;
 
 import io.spring.application.ArticleQueryService;
 import io.spring.core.article.Article;
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 import org.springframework.beans.factory.annotation.Autowired;
 
 class DuplicatedArticleValidator
@@ -13,6 +13,7 @@ class DuplicatedArticleValidator
 
   @Override
   public boolean isValid(String value, ConstraintValidatorContext context) {
-    return !articleQueryService.findBySlug(Article.toSlug(value), null).isPresent();
+    return (value == null || value.isEmpty())
+        || !articleQueryService.findBySlug(Article.toSlug(value), null).isPresent();
   }
 }
