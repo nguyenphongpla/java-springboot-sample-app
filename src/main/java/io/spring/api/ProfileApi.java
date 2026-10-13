@@ -1,8 +1,10 @@
 package io.spring.api;
 
+import io.spring.api.exception.NoAuthorizationException;
 import io.spring.api.exception.ResourceNotFoundException;
 import io.spring.application.ProfileQueryService;
 import io.spring.application.data.ProfileData;
+import io.spring.core.service.AuthorizationService;
 import io.spring.core.user.FollowRelation;
 import io.spring.core.user.User;
 import io.spring.core.user.UserRepository;
@@ -41,6 +43,9 @@ public class ProfileApi {
         .findByUsername(username)
         .map(
             target -> {
+              if (!AuthorizationService.canFollow(user, target)) {
+                throw new NoAuthorizationException();
+              }
               FollowRelation followRelation = new FollowRelation(user.getId(), target.getId());
               userRepository.saveRelation(followRelation);
               return profileResponse(profileQueryService.findByUsername(username, user).get());

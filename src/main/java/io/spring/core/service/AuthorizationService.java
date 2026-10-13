@@ -12,4 +12,8 @@ public class AuthorizationService {
   public static boolean canWriteComment(User user, Article article, Comment comment) {
     return user.getId().equals(article.getUserId()) || user.getId().equals(comment.getUserId());
   }
+
+  public static boolean canFollow(User user, User target) {
+    return !user.getId().equals(target.getId());
+  }
 }

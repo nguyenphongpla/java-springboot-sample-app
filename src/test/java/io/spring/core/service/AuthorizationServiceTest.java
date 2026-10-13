@@ -63,4 +63,17 @@ public class AuthorizationServiceTest {
 
     assertThat(AuthorizationService.canWriteComment(stranger, article, comment), is(false));
   }
+
+  @Test
+  public void user_can_follow_another_user() {
+    User user = newUser("user");
+    User target = newUser("target");
+    assertThat(AuthorizationService.canFollow(user, target), is(true));
+  }
+
+  @Test
+  public void user_cannot_follow_self() {
+    User user = newUser("user");
+    assertThat(AuthorizationService.canFollow(user, user), is(false));
+  }
 }

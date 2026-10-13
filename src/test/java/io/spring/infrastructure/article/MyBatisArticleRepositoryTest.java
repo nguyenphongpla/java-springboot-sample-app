@@ -57,6 +57,18 @@ public class MyBatisArticleRepositoryTest extends DbTestBase {
   }
 
   @Test
+  public void should_persist_updated_at_when_article_is_updated() {
+    articleRepository.save(article);
+
+    article.update("new test 3", "", "");
+    articleRepository.save(article);
+
+    Optional<Article> optional = articleRepository.findBySlug(article.getSlug());
+    Assertions.assertTrue(optional.isPresent());
+    Assertions.assertEquals(article.getUpdatedAt(), optional.get().getUpdatedAt());
+  }
+
+  @Test
   public void should_delete_article() {
     articleRepository.save(article);
 
