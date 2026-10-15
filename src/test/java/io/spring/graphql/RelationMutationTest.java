@@ -2,9 +2,11 @@ package io.spring.graphql;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.spring.api.exception.NoAuthorizationException;
 import io.spring.api.exception.ResourceNotFoundException;
 import io.spring.application.ProfileQueryService;
 import io.spring.application.data.ProfileData;
@@ -83,6 +85,16 @@ public class RelationMutationTest {
 
     assertEquals("target", payload.getProfile().getUsername());
     verify(userRepository).saveRelation(new FollowRelation(user.getId(), target.getId()));
+  }
+
+  @Test
+  public void should_throw_when_following_self() {
+    user = new User("test@test.com", "testuser", "123", "bio", "image");
+    authenticateAs(user);
+    when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(user));
+
+    assertThrows(NoAuthorizationException.class, () -> newMutation().follow("testuser"));
+    verify(userRepository, never()).saveRelation(org.mockito.ArgumentMatchers.any());
   }
 
   @Test

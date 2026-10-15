@@ -7,6 +7,7 @@ import io.spring.infrastructure.mybatis.mapper.UserMapper;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 public class MyBatisUserRepository implements UserRepository {
@@ -18,6 +19,7 @@ public class MyBatisUserRepository implements UserRepository {
   }
 
   @Override
+  @Transactional
   public void save(User user) {
     if (userMapper.findById(user.getId()) == null) {
       userMapper.insert(user);
@@ -42,6 +44,7 @@ public class MyBatisUserRepository implements UserRepository {
   }
 
   @Override
+  @Transactional
   public void saveRelation(FollowRelation followRelation) {
     if (!findRelation(followRelation.getUserId(), followRelation.getTargetId()).isPresent()) {
       userMapper.saveRelation(followRelation);

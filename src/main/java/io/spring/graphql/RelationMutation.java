@@ -3,9 +3,11 @@ package io.spring.graphql;
 import com.netflix.graphql.dgs.DgsComponent;
 import com.netflix.graphql.dgs.DgsData;
 import com.netflix.graphql.dgs.InputArgument;
+import io.spring.api.exception.NoAuthorizationException;
 import io.spring.api.exception.ResourceNotFoundException;
 import io.spring.application.ProfileQueryService;
 import io.spring.application.data.ProfileData;
+import io.spring.core.service.AuthorizationService;
 import io.spring.core.user.FollowRelation;
 import io.spring.core.user.User;
 import io.spring.core.user.UserRepository;
@@ -29,6 +31,9 @@ public class RelationMutation {
         .findByUsername(username)
         .map(
             target -> {
+              if (!AuthorizationService.canFollow(user, target)) {
+                throw new NoAuthorizationException();
+              }
               FollowRelation followRelation = new FollowRelation(user.getId(), target.getId());
               userRepository.saveRelation(followRelation);
               Profile profile = buildProfile(username, user);

@@ -76,6 +76,19 @@ public class ProfileApiTest extends TestWithCurrentUser {
   }
 
   @Test
+  public void should_not_follow_self() throws Exception {
+    given()
+        .header("Authorization", "Token " + token)
+        .when()
+        .post("/profiles/{username}/follow", username)
+        .prettyPeek()
+        .then()
+        .statusCode(403);
+    verify(userRepository, org.mockito.Mockito.never())
+        .saveRelation(org.mockito.ArgumentMatchers.any());
+  }
+
+  @Test
   public void should_unfollow_user_success() throws Exception {
     FollowRelation followRelation = new FollowRelation(user.getId(), anotherUser.getId());
     when(userRepository.findRelation(eq(user.getId()), eq(anotherUser.getId())))

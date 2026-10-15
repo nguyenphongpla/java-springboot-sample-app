@@ -4,6 +4,7 @@ import io.spring.core.user.FollowRelation;
 import io.spring.core.user.User;
 import io.spring.core.user.UserRepository;
 import io.spring.infrastructure.DbTestBase;
+import io.spring.infrastructure.mybatis.mapper.UserMapper;
 import io.spring.infrastructure.repository.MyBatisUserRepository;
 import java.util.Optional;
 import org.junit.jupiter.api.Assertions;
@@ -11,10 +12,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
+import org.springframework.dao.DataAccessException;
 
 @Import(MyBatisUserRepository.class)
 public class MyBatisUserRepositoryTest extends DbTestBase {
   @Autowired private UserRepository userRepository;
+  @Autowired private UserMapper userMapper;
   private User user;
 
   @BeforeEach
@@ -69,5 +72,17 @@ public class MyBatisUserRepositoryTest extends DbTestBase {
 
     userRepository.removeRelation(followRelation);
     Assertions.assertFalse(userRepository.findRelation(user.getId(), other.getId()).isPresent());
+  }
+
+  @Test
+  public void should_reject_duplicate_follow_relation_at_db_level() {
+    User other = new User("other@example.com", "other", "123", "", "");
+    userRepository.save(other);
+
+    FollowRelation followRelation = new FollowRelation(user.getId(), other.getId());
+    userMapper.saveRelation(followRelation);
+
+    Assertions.assertThrows(
+        DataAccessException.class, () -> userMapper.saveRelation(followRelation));
   }
 }

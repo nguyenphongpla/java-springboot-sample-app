@@ -35,6 +35,7 @@ public class CommentDatafetcherTest {
 
   @Mock private CommentQueryService commentQueryService;
   @Mock private DataFetchingEnvironment dataFetchingEnvironment;
+  @Mock private org.springframework.context.ApplicationContext applicationContext;
 
   @BeforeEach
   public void setUp() {
@@ -63,7 +64,8 @@ public class CommentDatafetcherTest {
   @Test
   public void should_build_comment_from_local_context() {
     CommentData commentData = buildCommentData("comment1");
-    DgsDataFetchingEnvironment dfe = new DgsDataFetchingEnvironment(dataFetchingEnvironment);
+    DgsDataFetchingEnvironment dfe =
+        new DgsDataFetchingEnvironment(dataFetchingEnvironment, applicationContext);
     when(dataFetchingEnvironment.<CommentData>getLocalContext()).thenReturn(commentData);
 
     CommentDatafetcher datafetcher = new CommentDatafetcher(commentQueryService);
@@ -77,7 +79,8 @@ public class CommentDatafetcherTest {
 
   @Test
   public void should_throw_when_neither_first_nor_last_provided() {
-    DgsDataFetchingEnvironment dfe = new DgsDataFetchingEnvironment(dataFetchingEnvironment);
+    DgsDataFetchingEnvironment dfe =
+        new DgsDataFetchingEnvironment(dataFetchingEnvironment, applicationContext);
 
     CommentDatafetcher datafetcher = new CommentDatafetcher(commentQueryService);
 
@@ -105,7 +108,8 @@ public class CommentDatafetcherTest {
             org.mockito.ArgumentMatchers.any()))
         .thenReturn(pager);
 
-    DgsDataFetchingEnvironment dfe = new DgsDataFetchingEnvironment(dataFetchingEnvironment);
+    DgsDataFetchingEnvironment dfe =
+        new DgsDataFetchingEnvironment(dataFetchingEnvironment, applicationContext);
     CommentDatafetcher datafetcher = new CommentDatafetcher(commentQueryService);
     DataFetcherResult<CommentsConnection> result =
         datafetcher.articleComments(5, null, null, null, dfe);
